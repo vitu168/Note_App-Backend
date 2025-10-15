@@ -96,20 +96,16 @@ namespace NoteApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateNote(int id, [FromBody] NoteInfoDto noteDto)
+        public async Task<IActionResult> UpdateNote(int id, [FromBody] NoteInfoUpdateDto noteDto)
         {
             if (noteDto == null)
             {
                 return BadRequest(new { error = "Note data is required" });
             }
-            if (id != noteDto.Id)
-            {
-                return BadRequest(new { error = "ID mismatch between route and body" });
-            }
 
             var note = new NoteInfo
             {
-                Id = noteDto.Id,
+                Id = id,
                 Name = noteDto.Name,
                 Description = noteDto.Description,
                 CreatedAt = noteDto.CreatedAt,
