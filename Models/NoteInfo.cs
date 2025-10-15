@@ -8,6 +8,7 @@ namespace NoteApi.Models
     [Table("noteinfo")]
     public class NoteInfo : BaseModel
     {
+        [PrimaryKey]
         [Column("Id")]
         public int Id { get; set; }
 
