@@ -66,8 +66,13 @@ namespace NoteApi.Controllers
                 return BadRequest(new { error = "Note data is required" });
             }
 
+            // Get the next available Id
+            var maxIdResponse = await _supabase.From<NoteInfo>().Select("Id").Order("Id", Supabase.Postgrest.Constants.Ordering.Descending).Limit(1).Get();
+            int nextId = maxIdResponse.Models.Count > 0 ? maxIdResponse.Models[0].Id + 1 : 1;
+
             var note = new NoteInfo
             {
+                Id = nextId,
                 Name = noteDto.Name,
                 Description = noteDto.Description,
                 CreatedAt = DateTime.UtcNow,
