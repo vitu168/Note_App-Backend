@@ -6,28 +6,42 @@ using Supabase.Postgrest.Attributes;
 namespace NoteApi.Models
 {
     [Table("noteinfo")]
-    public class NoteInfo : BaseModel
+    public class Noteinfo : BaseModel
     {
-        [PrimaryKey]
-        [Column("Id")]
         public int Id { get; set; }
-
-        [Column("Name")]
+        
         public string? Name { get; set; }
 
-        [Column("Description")]
         public string? Description { get; set; }
 
-        [Column("CreatedAt")]
         public DateTime? CreatedAt { get; set; }
 
-        [Column("UpdatedAt")]
         public DateTime? UpdatedAt { get; set; }
 
-        [Column("UserId")]
         public string? UserId { get; set; }
 
-        [Column("isFavorites")]
         public bool? IsFavorites { get; set; }
+    }
+
+
+    public class NoteQueryParams 
+    {
+        public string? Search {get; set; }
+        public bool? IsFavorites {get; set; }
+        public int page {get; set; } = 1;
+        public int pageSize {get; set; } = 20;
+
+        public int getSkip () => (page -1) * pageSize;
+        public int getTake () => pageSize;
+    }
+
+    public class PageNotesResult
+    {
+        public List<noteinfoDto> Items {get; set; } = new();
+        public int Page {get; set; }
+        public int pageSize {get; set; }
+        public int TotalCount {get; set; }
+        public bool hasPrevious => Page > 1;
+        public bool hasNext => Page * pageSize < TotalCount;
     }
 }

@@ -23,7 +23,6 @@ var options = new SupabaseOptions
     AutoConnectRealtime = true  
 };
 var supabaseClient = new Client(supabaseUrl, supabaseKey, options);
-// await supabaseClient.InitializeAsync();  // Remove to prevent startup failure
 
 builder.Services.AddSingleton(supabaseClient);
 
@@ -41,7 +40,6 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Note API v1");
     });
 
-    // Open browser automatically
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         var url = "https://localhost:5001/swagger";
@@ -51,7 +49,6 @@ if (app.Environment.IsDevelopment())
         }
         catch
         {
-            // Ignore if can't open browser
         }
     });
 }

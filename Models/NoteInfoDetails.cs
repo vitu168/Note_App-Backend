@@ -4,8 +4,7 @@ using Supabase.Postgrest.Attributes;
 
 namespace NoteApi.Models
 {
-    [Table("noteinfodetail")]
-    public class NoteInfoDetail : BaseModel
+    public class noteinfoDetail : BaseModel
     {
         public int NoteId { get; set; }
 
