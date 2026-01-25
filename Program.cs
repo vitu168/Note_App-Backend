@@ -22,13 +22,9 @@ var options = new SupabaseOptions
 {
     AutoConnectRealtime = true  
 };
-var supabaseClient = new Client(supabaseUrl, supabaseKey, options);
+ var supabaseClient = new Client(supabaseUrl, supabaseKey, options);
 
 builder.Services.AddSingleton(supabaseClient);
-
-// Optional: EF Core + Npgsql Setup (for direct SQL if not using Supabase client exclusively)
-// builder.Services.AddDbContext<YourDbContext>(options =>
-//     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")))
 
 var app = builder.Build();
 
@@ -43,13 +39,7 @@ if (app.Environment.IsDevelopment())
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         var url = "https://localhost:5001/swagger";
-        try
-        {
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        catch
-        {
-        }
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     });
 }
 

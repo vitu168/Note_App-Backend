@@ -1,6 +1,6 @@
 namespace NoteApi.Models
 {
-    public class noteinfoDto
+    public class NoteinfoDto
     {
         public int Id { get; set; }
 

@@ -22,26 +22,24 @@ namespace NoteApi.Models
 
         public bool? IsFavorites { get; set; }
     }
-
-
     public class NoteQueryParams 
     {
         public string? Search {get; set; }
         public bool? IsFavorites {get; set; }
-        public int page {get; set; } = 1;
-        public int pageSize {get; set; } = 20;
+        public int Page {get; set; }
+        public int PageSize {get; set; }
 
-        public int getSkip () => (page -1) * pageSize;
-        public int getTake () => pageSize;
+        public int GetSkip () => (Page -1) * PageSize;
+        public int GetTake () => PageSize;
     }
 
     public class PageNotesResult
     {
-        public List<noteinfoDto> Items {get; set; } = new();
+        public List<NoteinfoDto> Items {get; set; } = new();
         public int Page {get; set; }
-        public int pageSize {get; set; }
+        public int PageSize {get; set; }
         public int TotalCount {get; set; }
-        public bool hasPrevious => Page > 1;
-        public bool hasNext => Page * pageSize < TotalCount;
+        public bool HasPrevious => Page > 1;
+        public bool HasNext => Page * PageSize < TotalCount;
     }
 }
