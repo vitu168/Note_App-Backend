@@ -182,7 +182,6 @@ namespace NoteApi.Controllers
                 TotalCount = request.notes.Count
             };
 
-            // Get initial max ID once
             var maxIdResponse = await _supabase
                 .From<Noteinfo>()
                 .Select("Id")
