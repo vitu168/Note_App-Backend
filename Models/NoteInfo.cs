@@ -9,6 +9,7 @@ namespace NoteApi.Models
     [Table("noteinfo")]
     public class Noteinfo : BaseModel
     {
+        [PrimaryKey("Id")]
         public int Id { get; set; }
         
         public string? Name { get; set; }
@@ -52,5 +53,13 @@ namespace NoteApi.Models
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? HasNext => Page.HasValue && PageSize.HasValue ? Page * PageSize < TotalCount : null;
+    }
+
+    public class NoteinfoUpdateDto
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? UserId { get; set; }
+        public bool? IsFavorites { get; set; }
     }
 }

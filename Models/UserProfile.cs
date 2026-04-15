@@ -8,6 +8,7 @@ namespace NoteApi.Models
     [Table("userinfo")]
     public class UserProfile : BaseModel
     {
+        [PrimaryKey("Id")]
         public string Id { get; set; } = null!;
         public string? Name { get; set; }
         public string? AvatarUrl { get; set; }

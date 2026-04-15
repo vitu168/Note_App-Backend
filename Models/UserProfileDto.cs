@@ -10,6 +10,14 @@ namespace NoteApi.Models
         public bool? IsNote { get; set; }
     }
 
+    public class UserProfileUpdateDto
+    {
+        public string? Name { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? Email { get; set; }
+        public bool? IsNote { get; set; }
+    }
+
     public class UserProfileWithNotesDto
     {
         public string Id { get; set; } = null!;

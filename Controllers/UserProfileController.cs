@@ -152,15 +152,13 @@ namespace NoteApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateProfile(string id, [FromBody] UserProfileDto profileDto)
+        public async Task<ActionResult> UpdateProfile(string id, [FromBody] UserProfileUpdateDto profileDto)
         {
-            if (id != profileDto.Id) return BadRequest();
             var profile = new UserProfile
             {
-                Id = profileDto.Id,
+                Id = id,
                 Name = profileDto.Name,
                 AvatarUrl = profileDto.AvatarUrl,
-                CreatedAt = profileDto.CreatedAt,
                 Email = profileDto.Email,
                 IsNote = profileDto.IsNote
             };

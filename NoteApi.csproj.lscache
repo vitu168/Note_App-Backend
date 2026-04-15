@@ -65,7 +65,6 @@ Models/
  NoteInfoCreateDto.cs
  NoteInfoDetails.cs
  NoteInfoDto.cs
- NoteInfoUpdateDto.cs
  UserProfile.cs
  UserProfileDto.cs
 obj/Debug/net9.0/
