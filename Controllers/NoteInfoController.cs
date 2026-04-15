@@ -40,6 +40,11 @@ namespace NoteApi.Controllers
                 baseQuery = baseQuery.Where(n => n.Name!.Contains(searchTerm) || n.Description!.Contains(searchTerm));
             }
             
+            if (!string.IsNullOrEmpty(query.UserId))
+            {
+                baseQuery = baseQuery.Where(n => n.UserId == query.UserId);
+            }
+
             if (query.IsFavorites.HasValue)
             {
                 baseQuery = baseQuery.Where(n => n.IsFavorites == query.IsFavorites.Value);

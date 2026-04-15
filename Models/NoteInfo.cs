@@ -25,13 +25,14 @@ namespace NoteApi.Models
     }
     public class NoteQueryParams 
     {
-        public string? Search {get; set; }
-        public bool? IsFavorites {get; set; }
-        public int Page {get; set; }
-        public int PageSize {get; set; }
+        public string? Search { get; set; }
+        public bool? IsFavorites { get; set; }
+        public string? UserId { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
 
-        public int GetSkip () => (Page -1) * PageSize;
-        public int GetTake () => PageSize;
+        public int GetSkip() => (Page - 1) * PageSize;
+        public int GetTake() => PageSize;
     }
 
     public class PageNotesResult
