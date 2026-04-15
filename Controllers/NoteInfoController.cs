@@ -69,7 +69,8 @@ namespace NoteApi.Controllers
                 CreatedAt = n.CreatedAt,
                 UpdatedAt = n.UpdatedAt,
                 UserId = n.UserId,
-                IsFavorites = n.IsFavorites
+                IsFavorites = n.IsFavorites,
+                Reminder = n.Reminder
             }).ToList();
 
             return Ok(new PageNotesResult
@@ -99,7 +100,8 @@ namespace NoteApi.Controllers
                 CreatedAt = response.CreatedAt,
                 UpdatedAt = response.UpdatedAt,
                 UserId = response.UserId,
-                IsFavorites = response.IsFavorites
+                IsFavorites = response.IsFavorites,
+                Reminder = response.Reminder
             });
         }
 
@@ -123,7 +125,8 @@ namespace NoteApi.Controllers
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 UserId = noteDto.UserId,
-                IsFavorites = noteDto.IsFavorites
+                IsFavorites = noteDto.IsFavorites,
+                Reminder = noteDto.Reminder
             };
 
             var response = await _supabase
@@ -153,7 +156,8 @@ namespace NoteApi.Controllers
                 Name = noteDto.Name,
                 Description = noteDto.Description,
                 UserId = noteDto.UserId,
-                IsFavorites = noteDto.IsFavorites
+                IsFavorites = noteDto.IsFavorites,
+                Reminder = noteDto.Reminder
             };
 
             await _supabase
@@ -208,7 +212,8 @@ namespace NoteApi.Controllers
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     UserId = noteDto.UserId,
-                    IsFavorites = noteDto.IsFavorites
+                    IsFavorites = noteDto.IsFavorites,
+                    Reminder = noteDto.Reminder
                 };
 
                 var createResponse = await _supabase

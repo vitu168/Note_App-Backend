@@ -23,6 +23,8 @@ namespace NoteApi.Models
         public string? UserId { get; set; }
 
         public bool? IsFavorites { get; set; }
+
+        public DateTime? Reminder { get; set; }
     }
     public class NoteQueryParams 
     {
@@ -61,5 +63,6 @@ namespace NoteApi.Models
         public string? Description { get; set; }
         public string? UserId { get; set; }
         public bool? IsFavorites { get; set; }
+        public DateTime? Reminder { get; set; }
     }
 }
