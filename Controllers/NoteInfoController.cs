@@ -29,10 +29,9 @@ namespace NoteApi.Controllers
         [HttpGet]
         public async Task<ActionResult<PageNotesResult>> GetNotes([FromQuery] NoteQueryParams query)
         {
+            query ??= new NoteQueryParams();
             var page = query.Page > 0 ? query.Page : 1;
             var pageSize = query.PageSize > 0 ? query.PageSize : 0;
-            var offset = (page - 1) * pageSize;
-            var limit = pageSize;
             var baseQuery = (Supabase.Postgrest.Interfaces.IPostgrestTable<Noteinfo>)_supabase.From<Noteinfo>();
             
             if (!string.IsNullOrEmpty(query.Search))
@@ -45,13 +44,17 @@ namespace NoteApi.Controllers
             {
                 baseQuery = baseQuery.Where(n => n.IsFavorites == query.IsFavorites.Value);
             }
-            var response = await baseQuery
-                .Range(offset, offset + limit - 1)
-                .Get();
 
-            var totalCount = response.ResponseMessage?.Content.Headers.TryGetValues("Content-Range", out var values) == true
+            var response = pageSize > 0
+                ? await baseQuery
+                    .Range((page - 1) * pageSize, (page - 1) * pageSize + pageSize - 1)
+                    .Get()
+                : await baseQuery.Get();
+
+            var parsedTotal = response.ResponseMessage?.Content.Headers.TryGetValues("Content-Range", out var values) == true
                 ? ParseContentRangeCount(values.FirstOrDefault())
                 : response.Models.Count;
+            var totalCount = parsedTotal > 0 ? parsedTotal : response.Models.Count;
 
             var notes = response.Models.Select(n => new NoteinfoDto
             {
@@ -67,8 +70,8 @@ namespace NoteApi.Controllers
             return Ok(new PageNotesResult
             {
                 Items = notes,
-                Page = page,
-                PageSize = totalCount < pageSize ? totalCount : pageSize,
+                Page = pageSize > 0 ? page : null,
+                PageSize = pageSize > 0 ? pageSize : null,
                 TotalCount = totalCount
             });
         }

@@ -2,6 +2,7 @@
 //using Posgrest.Models;
 using Supabase.Postgrest.Models;
 using Supabase.Postgrest.Attributes;
+using System.Text.Json.Serialization;
 
 namespace NoteApi.Models
 {
@@ -35,11 +36,20 @@ namespace NoteApi.Models
 
     public class PageNotesResult
     {
-        public List<NoteinfoDto> Items {get; set; } = new();
-        public int Page {get; set; }
-        public int PageSize {get; set; }
-        public int TotalCount {get; set; }
-        public bool HasPrevious => Page > 1;
-        public bool HasNext => Page * PageSize < TotalCount;
+        public List<NoteinfoDto> Items { get; set; } = new();
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? Page { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? PageSize { get; set; }
+
+        public int TotalCount { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? HasPrevious => Page.HasValue ? Page > 1 : null;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public bool? HasNext => Page.HasValue && PageSize.HasValue ? Page * PageSize < TotalCount : null;
     }
 }
