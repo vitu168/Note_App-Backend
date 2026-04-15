@@ -9,4 +9,15 @@ namespace NoteApi.Models
         public string? Email { get; set; }
         public bool? IsNote { get; set; }
     }
+
+    public class UserProfileWithNotesDto
+    {
+        public string Id { get; set; } = null!;
+        public string? Name { get; set; }
+        public string? AvatarUrl { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string? Email { get; set; }
+        public bool? IsNote { get; set; }
+        public List<NoteinfoDto> Notes { get; set; } = new();
+    }
 }
