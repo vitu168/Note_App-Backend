@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Supabase;
 using System;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,17 +45,18 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-if (app.Environment.IsDevelopment())
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
 {
-    app.Lifetime.ApplicationStarted.Register(() =>
-    {
-        var url = "https://localhost:5001/swagger";
-        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-    });
+    // Production: bind to 0.0.0.0 for Render
+    app.Urls.Add($"http://0.0.0.0:{port}");
 }
-
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Urls.Add($"http://0.0.0.0:{port}");
+else
+{
+    // Development: bind to localhost
+    app.Urls.Add("http://localhost:5000");
+    app.Urls.Add("https://localhost:5001");
+}
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 app.UseAuthorization();
