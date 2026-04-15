@@ -147,8 +147,6 @@ namespace NoteApi.Controllers
                 Id = id,
                 Name = noteDto.Name,
                 Description = noteDto.Description,
-                CreatedAt = noteDto.CreatedAt,
-                UpdatedAt = DateTime.UtcNow,
                 UserId = noteDto.UserId,
                 IsFavorites = noteDto.IsFavorites
             };
