@@ -28,24 +28,26 @@ builder.Services.AddSingleton(supabaseClient);
 
 var app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Note API v1");
+    c.RoutePrefix = "swagger";
+});
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c => 
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Note API v1");
-    });
-
     app.Lifetime.ApplicationStarted.Register(() =>
     {
         var url = "https://localhost:5001/swagger";
         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     });
 }
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://0.0.0.0:{port}");
+app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
