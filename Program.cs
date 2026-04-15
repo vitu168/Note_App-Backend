@@ -42,8 +42,11 @@ if (app.Environment.IsDevelopment())
         Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     });
 }
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Urls.Add($"http://*:{port}");
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    app.Urls.Add($"http://*:{port}");
+}
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
