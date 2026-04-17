@@ -5,7 +5,8 @@ namespace NoteApi
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public DbSet<UserProfile> UserProfiles { get; set; } 
-        public DbSet<Noteinfo> Noteinfos { get; set; } 
+        public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<Noteinfo> Noteinfos { get; set; }
+        public DbSet<ChatMessenger> ChatMessengers { get; set; }
     }
 }

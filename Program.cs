@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NoteApi.Services;
 using Supabase;
 using System;
 
@@ -24,6 +25,8 @@ var options = new SupabaseOptions
  var supabaseClient = new Client(supabaseUrl, supabaseKey, options);
 
 builder.Services.AddSingleton(supabaseClient);
+
+builder.Services.AddHttpClient<FcmNotificationService>();
 
 builder.Services.AddCors(options =>
 {

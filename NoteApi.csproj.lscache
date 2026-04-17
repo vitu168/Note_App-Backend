@@ -56,15 +56,19 @@ TemporaryDependencyNodeTargetIdentifier=net9.0
 
 [sourceFiles]
 Controllers/
+ ChatMessengerController.cs
+ DeviceController.cs
  NoteInfoController.cs
  NoteInfoDetailsController.cs
  UserProfileController.cs
 DbContext.cs
 Models/
+ ChatMessenger.cs
  NoteInfo.cs
  NoteInfoCreateDto.cs
  NoteInfoDetails.cs
  NoteInfoDto.cs
+ UserDevice.cs
  UserProfile.cs
  UserProfileDto.cs
 obj/Debug/net9.0/
@@ -72,6 +76,7 @@ obj/Debug/net9.0/
  NoteApi.AssemblyInfo.cs
  NoteApi.GlobalUsings.g.cs
 Program.cs
+Services/FcmNotificationService.cs
 
 [metadataReferences]
 ../../../../usr/local/share/dotnet/packs/Microsoft.AspNetCore.App.Ref/9.0.11/ref/net9.0/
