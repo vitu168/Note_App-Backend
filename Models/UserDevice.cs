@@ -3,7 +3,7 @@ using Supabase.Postgrest.Models;
 
 namespace NoteApi.Models
 {
-    [Table("UserDevices")]
+    [Table("userdevices")]
     public class UserDevice : BaseModel
     {
         [PrimaryKey("Id")]
