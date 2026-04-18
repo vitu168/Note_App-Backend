@@ -23,6 +23,7 @@ var options = new SupabaseOptions
     AutoConnectRealtime = false
 };
  var supabaseClient = new Client(supabaseUrl, supabaseKey, options);
+await supabaseClient.InitializeAsync();
 
 builder.Services.AddSingleton(supabaseClient);
 
@@ -61,6 +62,21 @@ else
     app.Urls.Add("https://localhost:5001");
 }
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
+// Health check endpoint — used by Render and UptimeRobot to keep service alive
+app.MapGet("/health", async (Client supabase) =>
+{
+    try
+    {
+        // Ping Supabase with a lightweight query to verify connection is alive
+        await supabase.From<NoteApi.Models.UserProfile>().Limit(1).Get();
+        return Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(detail: ex.Message, statusCode: 503, title: "unhealthy");
+    }
+}).ExcludeFromDescription();
 
 app.UseAuthorization();
 app.MapControllers();
