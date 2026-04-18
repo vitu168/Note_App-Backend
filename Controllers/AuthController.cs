@@ -10,6 +10,31 @@ namespace NoteApi.Controllers
     {
         private readonly Client _supabase = supabase;
 
+        private async Task SaveFcmTokenAsync(string userId, string fcmToken)
+        {
+            var existing = await _supabase
+                .From<UserDevice>()
+                .Where(d => d.UserId == userId)
+                .Single();
+
+            if (existing != null)
+            {
+                existing.FCMToken = fcmToken;
+                existing.UpdatedAt = DateTime.UtcNow;
+                await _supabase.From<UserDevice>().Where(d => d.UserId == userId).Update(existing);
+            }
+            else
+            {
+                await _supabase.From<UserDevice>().Insert(new UserDevice
+                {
+                    UserId = userId,
+                    FCMToken = fcmToken,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
         // POST /api/auth/signup
         [HttpPost("signup")]
         public async Task<ActionResult<AuthResponseDto>> SignUp([FromBody] SignUpDto dto)
@@ -74,6 +99,9 @@ namespace NoteApi.Controllers
                 .From<UserProfile>()
                 .Where(u => u.Id == userId)
                 .Single();
+
+            if (!string.IsNullOrEmpty(dto.FCMToken))
+                await SaveFcmTokenAsync(userId, dto.FCMToken);
 
             return Ok(new AuthResponseDto
             {
