@@ -70,8 +70,12 @@ namespace NoteApi.Controllers
                 if (query.IsRead.HasValue) q2 = q2.Where(m => m.IsRead == query.IsRead.Value);
                 if (!string.IsNullOrWhiteSpace(query.Search)) q2 = q2.Where(m => m.Content!.Contains(query.Search!.Trim()));
 
-                var r1 = await q1.Get();
-                var r2 = await q2.Get();
+                var r1Task = q1.Get();
+                var r2Task = q2.Get();
+                await Task.WhenAll(r1Task, r2Task);
+
+                var r1 = r1Task.Result;
+                var r2 = r2Task.Result;
 
                 allMessages = r1.Models
                     .Concat(r2.Models)
