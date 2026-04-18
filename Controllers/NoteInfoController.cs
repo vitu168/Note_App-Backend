@@ -108,18 +108,8 @@ namespace NoteApi.Controllers
         [HttpPost]
         public async Task<ActionResult<NoteinfoDto>> CreateNote([FromBody] NoteinfoCreateDto noteDto)
         {
-            var maxIdResponse = await _supabase
-                .From<Noteinfo>()
-                .Select("Id")
-                .Order("Id", Supabase.Postgrest.Constants.Ordering.Descending)
-                .Limit(1)
-                .Get();
-                
-            var nextId = maxIdResponse.Models.Count > 0 ? maxIdResponse.Models[0].Id + 1 : 1;
-
             var note = new Noteinfo
             {
-                Id = nextId,
                 Name = noteDto.Name,
                 Description = noteDto.Description,
                 CreatedAt = DateTime.UtcNow,
