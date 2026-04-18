@@ -128,6 +128,20 @@ namespace NoteApi.Controllers
             return Ok(response.Models.Select(MapToDto).ToList());
         }
 
+        [HttpGet("unread-count/{receiverId}")]
+        public async Task<ActionResult<object>> GetUnreadCount(string receiverId)
+        {
+            if (string.IsNullOrWhiteSpace(receiverId))
+                return BadRequest(new { error = "ReceiverId is required" });
+
+            var response = await _supabase
+                .From<ChatMessenger>()
+                .Where(m => m.ReceiverId == receiverId && m.IsRead == false)
+                .Get();
+
+            return Ok(new { receiverId, unreadCount = response.Models.Count });
+        }
+
         [HttpPost]
         public async Task<ActionResult<ChatMessengerDto>> CreateMessage([FromBody] ChatMessengerCreateDto messageDto)
         {
