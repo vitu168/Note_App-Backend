@@ -266,5 +266,24 @@ namespace NoteApi.Controllers
 
             return NoContent();
         }
+
+        [HttpPut("{id}/mark-as-read")]
+        public async Task<IActionResult> MarkAsRead(int id)
+        {
+            var existingMessage = await _supabase.From<ChatMessenger>().Where(m => m.Id == id).Single();
+
+            if (existingMessage == null)
+                return NotFound(new { error = "Message not found" });
+
+            existingMessage.IsRead = true;
+            existingMessage.UpdatedAt = DateTime.UtcNow;
+
+            await _supabase
+                .From<ChatMessenger>()
+                .Where(m => m.Id == id)
+                .Update(existingMessage);
+
+            return Ok(new { message = "Message marked as read", id = id });
+        }
     }
 }
