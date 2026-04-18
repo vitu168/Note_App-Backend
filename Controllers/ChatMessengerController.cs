@@ -58,50 +58,57 @@ namespace NoteApi.Controllers
             var page = query.Page > 0 ? query.Page : 1;
             var pageSize = query.PageSize > 0 ? query.PageSize : 0;
 
-            var baseQuery = (IPostgrestTable<ChatMessenger>)_supabase.From<ChatMessenger>();
-
-            if (query.ConversationId.HasValue)
+            List<ChatMessenger> allMessages;
+            if (!string.IsNullOrWhiteSpace(query.SenderId) && !string.IsNullOrWhiteSpace(query.ReceiverId))
             {
-                baseQuery = baseQuery.Where(m => m.ConversationId == query.ConversationId.Value);
+                var q1 = (IPostgrestTable<ChatMessenger>)_supabase.From<ChatMessenger>();
+                q1 = q1.Where(m => m.SenderId == query.SenderId && m.ReceiverId == query.ReceiverId);
+                if (query.IsRead.HasValue) q1 = q1.Where(m => m.IsRead == query.IsRead.Value);
+                if (!string.IsNullOrWhiteSpace(query.Search)) q1 = q1.Where(m => m.Content!.Contains(query.Search!.Trim()));
+                var q2 = (IPostgrestTable<ChatMessenger>)_supabase.From<ChatMessenger>();
+                q2 = q2.Where(m => m.SenderId == query.ReceiverId && m.ReceiverId == query.SenderId);
+                if (query.IsRead.HasValue) q2 = q2.Where(m => m.IsRead == query.IsRead.Value);
+                if (!string.IsNullOrWhiteSpace(query.Search)) q2 = q2.Where(m => m.Content!.Contains(query.Search!.Trim()));
+
+                var r1 = await q1.Get();
+                var r2 = await q2.Get();
+
+                allMessages = r1.Models
+                    .Concat(r2.Models)
+                    .OrderBy(m => m.CreatedAt)
+                    .ToList();
+            }
+            else
+            {
+                var baseQuery = (IPostgrestTable<ChatMessenger>)_supabase.From<ChatMessenger>();
+
+                if (query.ConversationId.HasValue)
+                    baseQuery = baseQuery.Where(m => m.ConversationId == query.ConversationId.Value);
+
+                if (!string.IsNullOrWhiteSpace(query.SenderId))
+                    baseQuery = baseQuery.Where(m => m.SenderId == query.SenderId);
+
+                if (!string.IsNullOrWhiteSpace(query.ReceiverId))
+                    baseQuery = baseQuery.Where(m => m.ReceiverId == query.ReceiverId);
+
+                if (query.IsRead.HasValue)
+                    baseQuery = baseQuery.Where(m => m.IsRead == query.IsRead.Value);
+
+                if (!string.IsNullOrWhiteSpace(query.Search))
+                    baseQuery = baseQuery.Where(m => m.Content!.Contains(query.Search.Trim()));
+
+                var response = await baseQuery.Order("CreatedAt", Supabase.Postgrest.Constants.Ordering.Ascending).Get();
+                allMessages = response.Models;
             }
 
-            if (!string.IsNullOrWhiteSpace(query.SenderId))
-            {
-                baseQuery = baseQuery.Where(m => m.SenderId == query.SenderId);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.ReceiverId))
-            {
-                baseQuery = baseQuery.Where(m => m.ReceiverId == query.ReceiverId);
-            }
-
-            if (query.IsRead.HasValue)
-            {
-                baseQuery = baseQuery.Where(m => m.IsRead == query.IsRead.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.Search))
-            {
-                var searchTerm = query.Search.Trim();
-                baseQuery = baseQuery.Where(m => m.Content!.Contains(searchTerm));
-            }
-
-            var orderedQuery = baseQuery.Order("CreatedAt", Supabase.Postgrest.Constants.Ordering.Ascending);
-
-            var response = pageSize > 0
-                ? await orderedQuery
-                    .Range((page - 1) * pageSize, (page - 1) * pageSize + pageSize - 1)
-                    .Get()
-                : await orderedQuery.Get();
-
-            var parsedTotal = response.ResponseMessage?.Content.Headers.TryGetValues("Content-Range", out var values) == true
-                ? ParseContentRangeCount(values.FirstOrDefault())
-                : response.Models.Count;
-            var totalCount = parsedTotal > 0 ? parsedTotal : response.Models.Count;
+            var totalCount = allMessages.Count;
+            var pagedItems = pageSize > 0
+                ? allMessages.Skip((page - 1) * pageSize).Take(pageSize).ToList()
+                : allMessages;
 
             return Ok(new PageChatMessengerResult
             {
-                Items = response.Models.Select(MapToDto).ToList(),
+                Items = pagedItems.Select(MapToDto).ToList(),
                 Page = pageSize > 0 ? page : null,
                 PageSize = pageSize > 0 ? pageSize : null,
                 TotalCount = totalCount
