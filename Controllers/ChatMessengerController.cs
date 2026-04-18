@@ -70,6 +70,11 @@ namespace NoteApi.Controllers
                 baseQuery = baseQuery.Where(m => m.SenderId == query.SenderId);
             }
 
+            if (!string.IsNullOrWhiteSpace(query.ReceiverId))
+            {
+                baseQuery = baseQuery.Where(m => m.ReceiverId == query.ReceiverId);
+            }
+
             if (query.IsRead.HasValue)
             {
                 baseQuery = baseQuery.Where(m => m.IsRead == query.IsRead.Value);
