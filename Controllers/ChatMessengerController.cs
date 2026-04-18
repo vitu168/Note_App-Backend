@@ -189,30 +189,49 @@ namespace NoteApi.Controllers
             {
                 return BadRequest(new { error = "Failed to create message" });
             }
+            var updatePayload = new ChatMessenger
+            {
+                Id = createdMessage.Id,
+                ConversationId = createdMessage.Id,
+                SenderId = createdMessage.SenderId,
+                ReceiverId = createdMessage.ReceiverId,
+                Content = createdMessage.Content,
+                MessageType = createdMessage.MessageType,
+                IsRead = createdMessage.IsRead,
+                CreatedAt = createdMessage.CreatedAt ?? DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
-            // Set ConversationId equal to the message Id
-            createdMessage.ConversationId = createdMessage.Id;
             await _supabase
                 .From<ChatMessenger>()
                 .Where(m => m.Id == createdMessage.Id)
-                .Update(createdMessage);
+                .Update(updatePayload);
 
-            // Send push notification to receiver if they have a registered FCM token
+            createdMessage.ConversationId = createdMessage.Id;
+
+            // Send push notification to receiver — wrapped in try/catch so it never crashes message creation
             if (!string.IsNullOrWhiteSpace(messageDto.ReceiverId))
             {
-                var deviceResponse = await _supabase
-                    .From<UserDevice>()
-                    .Where(d => d.UserId == messageDto.ReceiverId)
-                    .Single();
-
-                if (deviceResponse?.FCMToken != null)
+                try
                 {
-                    await _fcmService.SendAsync(
-                        deviceResponse.FCMToken,
-                        title: "New Message",
-                        body: messageDto.Content ?? "You received a new message",
-                        data: new { conversationId = createdMessage.ConversationId.ToString() }
-                    );
+                    var deviceResponse = await _supabase
+                        .From<UserDevice>()
+                        .Where(d => d.UserId == messageDto.ReceiverId)
+                        .Single();
+
+                    if (deviceResponse?.FCMToken != null)
+                    {
+                        await _fcmService.SendAsync(
+                            deviceResponse.FCMToken,
+                            title: "New Message",
+                            body: messageDto.Content ?? "You received a new message",
+                            data: new { conversationId = createdMessage.ConversationId.ToString() }
+                        );
+                    }
+                }
+                catch
+                {
+                    // Notification failure should not fail the message creation
                 }
             }
 
