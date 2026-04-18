@@ -20,7 +20,7 @@ if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
 
 var options = new SupabaseOptions
 {
-    AutoConnectRealtime = true  
+    AutoConnectRealtime = false
 };
  var supabaseClient = new Client(supabaseUrl, supabaseKey, options);
 
