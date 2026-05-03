@@ -216,10 +216,28 @@ namespace NoteApi.Controllers
                 Reminder = noteDto.Reminder
             };
 
-            var response = await _supabase
-                .From<Noteinfo>()
-                .Insert(note, new Supabase.Postgrest.QueryOptions { Returning = Supabase.Postgrest.QueryOptions.ReturnType.Representation });
+            Supabase.Postgrest.Responses.ModeledResponse<Noteinfo> response;
+            try
+            {
+                response = await _supabase
+                    .From<Noteinfo>()
+                    .Insert(note, new Supabase.Postgrest.QueryOptions { Returning = Supabase.Postgrest.QueryOptions.ReturnType.Representation });
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[CreateNote] Insert failed: {ex.GetType().Name}: {ex.Message}");
+                return StatusCode(500, new
+                {
+                    error = "Failed to create note",
+                    detail = ex.Message,
+                    type = ex.GetType().Name
+                });
+            }
 
+            if (response.Models.Count == 0)
+            {
+                return StatusCode(500, new { error = "Insert returned no rows" });
+            }
             var createdNote = response.Models[0];
 
             if (userIds.Count > 0)
@@ -280,10 +298,23 @@ namespace NoteApi.Controllers
                 Reminder = noteDto.Reminder
             };
 
-            await _supabase
-                .From<Noteinfo>()
-                .Where(n => n.Id == id)
-                .Update(noteUpdate);
+            try
+            {
+                await _supabase
+                    .From<Noteinfo>()
+                    .Where(n => n.Id == id)
+                    .Update(noteUpdate);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[UpdateNote] Update failed: {ex.GetType().Name}: {ex.Message}");
+                return StatusCode(500, new
+                {
+                    error = "Failed to update note",
+                    detail = ex.Message,
+                    type = ex.GetType().Name
+                });
+            }
 
             if (hasUserIds)
             {
