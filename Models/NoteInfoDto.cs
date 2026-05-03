@@ -14,6 +14,8 @@ namespace NoteApi.Models
 
         public string? UserId { get; set; }
 
+        public List<string>? UserIds { get; set; }
+
         public bool? IsFavorites { get; set; }
 
         public DateTime? Reminder { get; set; }
