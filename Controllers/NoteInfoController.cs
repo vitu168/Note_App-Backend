@@ -368,30 +368,103 @@ namespace NoteApi.Controllers
             if (string.IsNullOrEmpty(actingUserId))
                 return Unauthorized(new { error = "X-User-Id header required" });
 
-            if (string.IsNullOrWhiteSpace(dto.UserId) || !NoteRoles.IsAssignable(dto.Role))
-                return BadRequest(new { error = "userId required; role must be deleter|editor|viewer" });
+            // Determine if batch or single user sharing
+            var userIds = (dto.UserIds ?? new List<string>())
+                .Where(uid => !string.IsNullOrWhiteSpace(uid))
+                .Distinct()
+                .ToList();
+            
+            if (userIds.Count == 0 && !string.IsNullOrWhiteSpace(dto.UserId))
+                userIds.Add(dto.UserId);
+
+            if (userIds.Count == 0 || !NoteRoles.IsAssignable(dto.Role))
+                return BadRequest(new { error = "userId(s) required; role must be deleter|editor|viewer" });
 
             if (!await UserCanAsync(id, actingUserId, NoteAction.ManageShares))
                 return StatusCode(403, new { error = "Only the owner can share this note" });
 
-            if (dto.UserId == actingUserId)
+            // Validate that acting user is not in the list
+            if (userIds.Contains(actingUserId))
                 return BadRequest(new { error = "Cannot change your own role here; use transfer-owner" });
 
-            var existing = await GetUserRoleAsync(id, dto.UserId);
-            if (existing == NoteRoles.Owner)
-                return BadRequest(new { error = "Target is already the owner" });
-
-            await _supabase.From<NoteUser>().Upsert(new NoteUser
+            // Validate that none of the targets are already owners
+            var failedUsers = new List<string>();
+            foreach (var userId in userIds)
             {
-                NoteId    = id,
-                UserId    = dto.UserId,
-                Role      = dto.Role!,
-                CreatedAt = DateTime.UtcNow
-            });
+                var existing = await GetUserRoleAsync(id, userId);
+                if (existing == NoteRoles.Owner)
+                    failedUsers.Add(userId);
+            }
 
-            return Ok(new { noteId = id, userId = dto.UserId, role = dto.Role });
+            if (failedUsers.Count > 0)
+                return BadRequest(new { error = $"Cannot share: {string.Join(", ", failedUsers)} already have owner access" });
+
+            // Share with all users
+            var sharedUsers = new List<object>();
+            foreach (var userId in userIds)
+            {
+                await _supabase.From<NoteUser>().Upsert(new NoteUser
+                {
+                    NoteId    = id,
+                    UserId    = userId,
+                    Role      = dto.Role!,
+                    CreatedAt = DateTime.UtcNow
+                });
+                sharedUsers.Add(new { userId, role = dto.Role });
+            }
+
+            return Ok(new { noteId = id, shared = sharedUsers });
         }
 
+        // Batch update roles for multiple users
+        [HttpPut("{id}/share")]
+        public async Task<IActionResult> BatchChangeShareRoles(int id, [FromBody] BatchChangeRoleDto dto)
+        {
+            var actingUserId = GetActingUserId();
+            if (string.IsNullOrEmpty(actingUserId))
+                return Unauthorized(new { error = "X-User-Id header required" });
+
+            if (dto.Users == null || dto.Users.Count == 0)
+                return BadRequest(new { error = "Users list is required and cannot be empty" });
+
+            if (!await UserCanAsync(id, actingUserId, NoteAction.ManageShares))
+                return StatusCode(403, new { error = "Only the owner can change roles" });
+
+            var results = new List<object>();
+            var errors = new List<string>();
+
+            foreach (var userChange in dto.Users)
+            {
+                if (string.IsNullOrWhiteSpace(userChange.UserId) || !NoteRoles.IsAssignable(userChange.Role))
+                {
+                    errors.Add($"Invalid user/role for {userChange.UserId}");
+                    continue;
+                }
+
+                var existing = await GetUserRoleAsync(id, userChange.UserId);
+                if (existing == null)
+                {
+                    errors.Add($"{userChange.UserId} is not shared on this note");
+                    continue;
+                }
+                if (existing == NoteRoles.Owner)
+                {
+                    errors.Add($"Cannot change {userChange.UserId}'s role (already owner)");
+                    continue;
+                }
+
+                await _supabase.From<NoteUser>()
+                    .Where(nu => nu.NoteId == id && nu.UserId == userChange.UserId)
+                    .Set(nu => nu.Role!, userChange.Role!)
+                    .Update();
+
+                results.Add(new { userId = userChange.UserId, role = userChange.Role });
+            }
+
+            return Ok(new { noteId = id, updated = results, errors });
+        }
+
+        // Single user role change (backward compatibility)
         [HttpPut("{id}/share/{userId}")]
         public async Task<IActionResult> ChangeShareRole(int id, string userId, [FromBody] ChangeRoleDto dto)
         {

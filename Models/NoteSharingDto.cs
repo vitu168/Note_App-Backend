@@ -18,11 +18,23 @@ namespace NoteApi.Models
     public class ShareNoteDto
     {
         public string? UserId { get; set; }
+        public List<string>? UserIds { get; set; }
         public string? Role   { get; set; }
     }
 
     public class ChangeRoleDto
     {
+        public string? Role { get; set; }
+    }
+
+    public class BatchChangeRoleDto
+    {
+        public List<UserRoleChange>? Users { get; set; }
+    }
+
+    public class UserRoleChange
+    {
+        public string? UserId { get; set; }
         public string? Role { get; set; }
     }
 
